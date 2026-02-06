@@ -55,20 +55,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const adminLogin = (email: string, pass: string) => {
-        // Default Owner Credentials
-        const DEFAULT_EMAIL = "admin@khaliji.com";
-        const DEFAULT_PASS = "Anaka2026_VIP";
+        // Owner Credentials
+        const ADMIN_EMAIL = "nourdinebamba36@gmail.com";
+        const ADMIN_PASS = "36010201Ndr";
 
-        // Check for custom credentials from settings
-        const customEmail = localStorage.getItem('admin_email');
-        const customPass = localStorage.getItem('admin_password');
-
-        const validEmail = customEmail || DEFAULT_EMAIL;
-        const validPass = customPass || DEFAULT_PASS;
-
-        if (email === validEmail && pass === validPass) {
+        if (email === ADMIN_EMAIL && pass === ADMIN_PASS) {
             setIsAdminLogged(true);
             localStorage.setItem('khaliji_admin_auth', 'true');
+            // set cookie for middleware protection if any
+            document.cookie = `auth_token=admin-token; path=/; max-age=86400; SameSite=Strict`;
             return true;
         }
         return false;
