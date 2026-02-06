@@ -121,89 +121,89 @@ export default function Navbar() {
                 </div>
 
 
-                {/* Full Screen Mobile Menu - FIXED VISIBILITY */}
+                {/* Full Screen Mobile Menu - FINAL SOLID FIX */}
                 {isMenuOpen && (
-                    <div className="fixed inset-0 z-[100] bg-[#05070A] flex flex-col md:hidden">
-                        {/* Header */}
-                        <div className="flex items-center justify-between p-6 border-b border-white/10 shrink-0">
+                    <div className="fixed inset-0 z-[9999] bg-black flex flex-col md:hidden overflow-hidden h-screen w-screen">
+
+                        {/* Header - Distinct Background */}
+                        <div className="flex items-center justify-between p-6 bg-black border-b border-gray-800 shrink-0 relative z-[10000]">
                             <h2 className="text-2xl font-black text-gold-400">القائمة الرئيسية</h2>
                             <button
                                 onClick={() => setIsMenuOpen(false)}
-                                className="w-10 h-10 flex items-center justify-center text-white bg-white/10 rounded-full hover:bg-red-500 hover:text-white transition-all"
+                                className="w-12 h-12 flex items-center justify-center text-white bg-gray-900 rounded-full border border-gray-700 active:scale-95 transition-transform"
                             >
-                                <X className="w-6 h-6" />
+                                <X className="w-8 h-8" />
                             </button>
                         </div>
 
-                        {/* Menu Items */}
-                        <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                            <Link
-                                href="/"
-                                onClick={() => setIsMenuOpen(false)}
-                                className="flex items-center gap-4 text-white p-4 rounded-2xl bg-white/5 active:bg-white/10 transition-all border border-transparent active:border-gold-400/30"
-                            >
-                                <div className="w-10 h-10 rounded-full bg-gold-400/20 flex items-center justify-center text-gold-400 shrink-0">
-                                    🏠
+                        {/* Menu Items - Scrollable Area */}
+                        <div className="flex-1 overflow-y-auto bg-black p-6 relative z-[9999]">
+                            <div className="flex flex-col gap-5 pt-4 pb-20"> {/* Added padding bottom for safety */}
+
+                                <Link
+                                    href="/"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="flex items-center gap-6 text-white p-5 rounded-2xl bg-gray-900/50 border border-gray-800 active:bg-gray-800 transition-all"
+                                >
+                                    <span className="text-2xl">🏠</span>
+                                    <span className="text-xl font-bold">الرئيسية</span>
+                                </Link>
+
+                                <Link
+                                    href="/shop"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="flex items-center gap-6 text-white p-5 rounded-2xl bg-gray-900/50 border border-gray-800 active:bg-gray-800 transition-all"
+                                >
+                                    <span className="text-2xl">🛍️</span>
+                                    <span className="text-xl font-bold">جميع المنتجات</span>
+                                </Link>
+
+                                <div className="grid grid-cols-3 gap-4 my-2">
+                                    <Link
+                                        href="/shop/perfumes"
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="flex flex-col items-center gap-3 bg-gray-900/30 p-4 rounded-2xl border border-gray-800"
+                                    >
+                                        <span className="text-4xl">🌸</span>
+                                        <span className="text-sm font-bold text-gray-300 mt-2">العطور</span>
+                                    </Link>
+                                    <Link
+                                        href="/shop/watches"
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="flex flex-col items-center gap-3 bg-gray-900/30 p-4 rounded-2xl border border-gray-800"
+                                    >
+                                        <span className="text-4xl">⌚</span>
+                                        <span className="text-sm font-bold text-gray-300 mt-2">الساعات</span>
+                                    </Link>
+                                    <Link
+                                        href="/shop/glasses"
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="flex flex-col items-center gap-3 bg-gray-900/30 p-4 rounded-2xl border border-gray-800"
+                                    >
+                                        <span className="text-4xl">👓</span>
+                                        <span className="text-sm font-bold text-gray-300 mt-2">النظارات</span>
+                                    </Link>
                                 </div>
-                                <span className="text-xl font-bold">الرئيسية</span>
-                            </Link>
 
-                            <Link
-                                href="/shop"
-                                onClick={() => setIsMenuOpen(false)}
-                                className="flex items-center gap-4 text-white p-4 rounded-2xl bg-white/5 active:bg-white/10 transition-all border border-transparent active:border-gold-400/30"
-                            >
-                                <div className="w-10 h-10 rounded-full bg-gold-400/20 flex items-center justify-center text-gold-400 shrink-0">
-                                    🛍️
+                                <Link
+                                    href="/dubai-request"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="flex items-center gap-5 text-gold-400 bg-gold-400/10 p-5 rounded-2xl border border-gold-400/30 font-bold mt-2"
+                                >
+                                    <span className="text-3xl">✨</span>
+                                    <span className="text-lg">خدمة الطلب الخاص (دبي)</span>
+                                </Link>
+
+                                <div className="border-t border-gray-800 pt-8 mt-4">
+                                    <a
+                                        href="https://www.facebook.com/profile.php?id=61586194517512"
+                                        target="_blank"
+                                        className="flex items-center justify-center gap-3 w-full bg-[#1877F2] text-white py-5 rounded-xl font-bold text-lg"
+                                    >
+                                        <Facebook className="w-6 h-6" />
+                                        تابعنا على فيسبوك
+                                    </a>
                                 </div>
-                                <span className="text-xl font-bold">جميع المنتجات</span>
-                            </Link>
-
-                            <div className="grid grid-cols-3 gap-3 my-2">
-                                <Link
-                                    href="/shop/perfumes"
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className="flex flex-col items-center gap-3 bg-white/5 p-4 rounded-2xl border border-white/5 active:border-gold-400/50 active:bg-gold-400/10 transition-all"
-                                >
-                                    <span className="text-3xl">🌸</span>
-                                    <span className="text-sm font-bold text-gray-200">العطور</span>
-                                </Link>
-                                <Link
-                                    href="/shop/watches"
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className="flex flex-col items-center gap-3 bg-white/5 p-4 rounded-2xl border border-white/5 active:border-gold-400/50 active:bg-gold-400/10 transition-all"
-                                >
-                                    <span className="text-3xl">⌚</span>
-                                    <span className="text-sm font-bold text-gray-200">الساعات</span>
-                                </Link>
-                                <Link
-                                    href="/shop/glasses"
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className="flex flex-col items-center gap-3 bg-white/5 p-4 rounded-2xl border border-white/5 active:border-gold-400/50 active:bg-gold-400/10 transition-all"
-                                >
-                                    <span className="text-3xl">👓</span>
-                                    <span className="text-sm font-bold text-gray-200">النظارات</span>
-                                </Link>
-                            </div>
-
-                            <Link
-                                href="/dubai-request"
-                                onClick={() => setIsMenuOpen(false)}
-                                className="flex items-center gap-4 text-gold-400 bg-gold-400/10 p-4 rounded-2xl border border-gold-400/30 font-bold"
-                            >
-                                <span className="text-2xl shrink-0">✨</span>
-                                خدمة الطلب الخاص (دبي)
-                            </Link>
-
-                            <div className="pt-6 border-t border-white/10">
-                                <a
-                                    href="https://www.facebook.com/profile.php?id=61586194517512"
-                                    target="_blank"
-                                    className="flex items-center justify-center gap-3 w-full bg-[#1877F2] text-white py-4 rounded-xl font-bold active:opacity-90 transition-opacity"
-                                >
-                                    <Facebook className="w-6 h-6" />
-                                    تابعنا على فيسبوك
-                                </a>
                             </div>
                         </div>
                     </div>
