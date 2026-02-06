@@ -121,100 +121,92 @@ export default function Navbar() {
                 </div>
 
 
-                {/* Mobile Sidebar Menu */}
+                {/* Full Screen Mobile Menu - FIXED VISIBILITY */}
                 {isMenuOpen && (
-                    <>
-                        {/* Overlay */}
-                        <div
-                            className="md:hidden fixed inset-0 bg-dark-900/80 backdrop-blur-sm z-40 animate-in fade-in"
-                            onClick={() => setIsMenuOpen(false)}
-                        />
+                    <div className="fixed inset-0 z-[100] bg-[#05070A] flex flex-col md:hidden">
+                        {/* Header */}
+                        <div className="flex items-center justify-between p-6 border-b border-white/10 shrink-0">
+                            <h2 className="text-2xl font-black text-gold-400">القائمة الرئيسية</h2>
+                            <button
+                                onClick={() => setIsMenuOpen(false)}
+                                className="w-10 h-10 flex items-center justify-center text-white bg-white/10 rounded-full hover:bg-red-500 hover:text-white transition-all"
+                            >
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
 
-                        {/* Sliding Menu */}
-                        <div className="md:hidden fixed top-0 right-0 h-full w-[280px] bg-dark-800 border-l border-gold-400/20 z-50 shadow-2xl animate-in slide-in-from-right overflow-y-auto">
-                            {/* Header */}
-                            <div className="flex items-center justify-between p-6 border-b border-dark-700">
-                                <h2 className="text-xl font-black text-gold-400">القائمة</h2>
-                                <button
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className="p-2 text-gray-400 hover:text-gold-400 transition-colors"
-                                >
-                                    <X className="w-6 h-6" />
-                                </button>
-                            </div>
+                        {/* Menu Items */}
+                        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                            <Link
+                                href="/"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="flex items-center gap-4 text-white p-4 rounded-2xl bg-white/5 active:bg-white/10 transition-all border border-transparent active:border-gold-400/30"
+                            >
+                                <div className="w-10 h-10 rounded-full bg-gold-400/20 flex items-center justify-center text-gold-400 shrink-0">
+                                    🏠
+                                </div>
+                                <span className="text-xl font-bold">الرئيسية</span>
+                            </Link>
 
-                            {/* Menu Items */}
-                            <div className="p-4 space-y-2">
-                                <Link
-                                    href="/"
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className="flex items-center gap-3 text-white hover:text-gold-400 hover:bg-dark-700 px-4 py-4 rounded-xl text-base font-bold transition-all active:scale-95"
-                                >
-                                    <div className="w-2 h-2 rounded-full bg-gold-400"></div>
-                                    الرئيسية
-                                </Link>
+                            <Link
+                                href="/shop"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="flex items-center gap-4 text-white p-4 rounded-2xl bg-white/5 active:bg-white/10 transition-all border border-transparent active:border-gold-400/30"
+                            >
+                                <div className="w-10 h-10 rounded-full bg-gold-400/20 flex items-center justify-center text-gold-400 shrink-0">
+                                    🛍️
+                                </div>
+                                <span className="text-xl font-bold">جميع المنتجات</span>
+                            </Link>
 
-                                <Link
-                                    href="/shop"
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className="flex items-center gap-3 text-gray-300 hover:text-gold-400 hover:bg-dark-700 px-4 py-4 rounded-xl text-base font-medium transition-all active:scale-95"
-                                >
-                                    <ShoppingBag className="w-5 h-5" />
-                                    جميع المنتجات
-                                </Link>
-
-                                <div className="h-px bg-dark-700 my-2"></div>
-
+                            <div className="grid grid-cols-3 gap-3 my-2">
                                 <Link
                                     href="/shop/perfumes"
                                     onClick={() => setIsMenuOpen(false)}
-                                    className="flex items-center gap-3 text-gray-300 hover:text-gold-400 hover:bg-dark-700 px-4 py-4 rounded-xl text-base font-medium transition-all active:scale-95"
+                                    className="flex flex-col items-center gap-3 bg-white/5 p-4 rounded-2xl border border-white/5 active:border-gold-400/50 active:bg-gold-400/10 transition-all"
                                 >
-                                    <span className="text-2xl">🌸</span>
-                                    العطور
+                                    <span className="text-3xl">🌸</span>
+                                    <span className="text-sm font-bold text-gray-200">العطور</span>
                                 </Link>
-
                                 <Link
                                     href="/shop/watches"
                                     onClick={() => setIsMenuOpen(false)}
-                                    className="flex items-center gap-3 text-gray-300 hover:text-gold-400 hover:bg-dark-700 px-4 py-4 rounded-xl text-base font-medium transition-all active:scale-95"
+                                    className="flex flex-col items-center gap-3 bg-white/5 p-4 rounded-2xl border border-white/5 active:border-gold-400/50 active:bg-gold-400/10 transition-all"
                                 >
-                                    <span className="text-2xl">⌚</span>
-                                    الساعات
+                                    <span className="text-3xl">⌚</span>
+                                    <span className="text-sm font-bold text-gray-200">الساعات</span>
                                 </Link>
-
                                 <Link
                                     href="/shop/glasses"
                                     onClick={() => setIsMenuOpen(false)}
-                                    className="flex items-center gap-3 text-gray-300 hover:text-gold-400 hover:bg-dark-700 px-4 py-4 rounded-xl text-base font-medium transition-all active:scale-95"
+                                    className="flex flex-col items-center gap-3 bg-white/5 p-4 rounded-2xl border border-white/5 active:border-gold-400/50 active:bg-gold-400/10 transition-all"
                                 >
-                                    <span className="text-2xl">👓</span>
-                                    النظارات
+                                    <span className="text-3xl">👓</span>
+                                    <span className="text-sm font-bold text-gray-200">النظارات</span>
                                 </Link>
+                            </div>
 
-                                <div className="h-px bg-dark-700 my-2"></div>
+                            <Link
+                                href="/dubai-request"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="flex items-center gap-4 text-gold-400 bg-gold-400/10 p-4 rounded-2xl border border-gold-400/30 font-bold"
+                            >
+                                <span className="text-2xl shrink-0">✨</span>
+                                خدمة الطلب الخاص (دبي)
+                            </Link>
 
-                                <Link
-                                    href="/dubai-request"
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className="flex items-center gap-3 text-gold-400 bg-gold-400/10 hover:bg-gold-400/20 px-4 py-4 rounded-xl text-base font-bold transition-all active:scale-95 border border-gold-400/30"
-                                >
-                                    <span className="text-2xl">✨</span>
-                                    خدمة دبي VIP
-                                </Link>
-
+                            <div className="pt-6 border-t border-white/10">
                                 <a
                                     href="https://www.facebook.com/profile.php?id=61586194517512"
                                     target="_blank"
-                                    onClick={() => setIsMenuOpen(false)}
-                                    className="flex items-center gap-3 text-white hover:text-gold-400 bg-dark-900 hover:bg-dark-700 px-4 py-4 rounded-xl transition-all active:scale-95 mt-4"
+                                    className="flex items-center justify-center gap-3 w-full bg-[#1877F2] text-white py-4 rounded-xl font-bold active:opacity-90 transition-opacity"
                                 >
-                                    <Facebook className="w-5 h-5 text-blue-500" />
-                                    <span className="font-bold">تابعنا على فيسبوك</span>
+                                    <Facebook className="w-6 h-6" />
+                                    تابعنا على فيسبوك
                                 </a>
                             </div>
                         </div>
-                    </>
+                    </div>
                 )}
             </div>
         </nav>

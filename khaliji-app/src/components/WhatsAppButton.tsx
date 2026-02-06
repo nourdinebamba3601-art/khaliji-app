@@ -40,7 +40,7 @@ export default function WhatsAppButton() {
     };
 
     return (
-        <div className="fixed bottom-6 left-6 z-50 flex flex-col items-end gap-4">
+        <div className="fixed bottom-24 left-4 md:bottom-6 md:left-6 z-40 flex flex-col items-end gap-4">
 
             <AnimatePresence>
                 {isOpen && (
