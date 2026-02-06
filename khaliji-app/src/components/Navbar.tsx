@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ShoppingBag, Menu, Search, X, User, ShoppingCart, LogOut, Settings, Facebook } from 'lucide-react';
+import { ShoppingBag, Menu, Search, X, User, ShoppingCart, LogOut, Settings, Facebook, Watch, Glasses, SprayCan } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useSettings } from '@/context/SettingsContext';
@@ -162,25 +162,25 @@ export default function Navbar() {
                                     <Link
                                         href="/shop/perfumes"
                                         onClick={() => setIsMenuOpen(false)}
-                                        className="flex flex-col items-center gap-3 bg-gray-900/30 p-4 rounded-2xl border border-gray-800"
+                                        className="flex flex-col items-center gap-3 bg-gray-900/30 p-4 rounded-2xl border border-gray-800 active:border-gold-400 active:bg-gray-800 transition-all group"
                                     >
-                                        <span className="text-4xl">🌸</span>
+                                        <SprayCan className="w-10 h-10 text-gold-400 group-hover:scale-110 transition-transform" />
                                         <span className="text-sm font-bold text-gray-300 mt-2">العطور</span>
                                     </Link>
                                     <Link
                                         href="/shop/watches"
                                         onClick={() => setIsMenuOpen(false)}
-                                        className="flex flex-col items-center gap-3 bg-gray-900/30 p-4 rounded-2xl border border-gray-800"
+                                        className="flex flex-col items-center gap-3 bg-gray-900/30 p-4 rounded-2xl border border-gray-800 active:border-gold-400 active:bg-gray-800 transition-all group"
                                     >
-                                        <span className="text-4xl">⌚</span>
+                                        <Watch className="w-10 h-10 text-gold-400 group-hover:scale-110 transition-transform" />
                                         <span className="text-sm font-bold text-gray-300 mt-2">الساعات</span>
                                     </Link>
                                     <Link
                                         href="/shop/glasses"
                                         onClick={() => setIsMenuOpen(false)}
-                                        className="flex flex-col items-center gap-3 bg-gray-900/30 p-4 rounded-2xl border border-gray-800"
+                                        className="flex flex-col items-center gap-3 bg-gray-900/30 p-4 rounded-2xl border border-gray-800 active:border-gold-400 active:bg-gray-800 transition-all group"
                                     >
-                                        <span className="text-4xl">👓</span>
+                                        <Glasses className="w-10 h-10 text-gold-400 group-hover:scale-110 transition-transform" />
                                         <span className="text-sm font-bold text-gray-300 mt-2">النظارات</span>
                                     </Link>
                                 </div>
