@@ -32,12 +32,48 @@ const DubaiRequestContext = createContext<DubaiRequestContextType | undefined>(u
 export function DubaiRequestProvider({ children }: { children: React.ReactNode }) {
     const [requests, setRequests] = useState<DubaiRequest[]>([]);
 
-    useEffect(() => {
-        const saved = localStorage.getItem('khaliji_dubai_requests');
-        if (saved) {
-            setRequests(JSON.parse(saved));
+    // Fetch requests from API
+    const fetchRequests = async () => {
+        try {
+            const res = await fetch(`/api/dubai-requests?t=${Date.now()}`, {
+                cache: 'no-store',
+                headers: {
+                    'Pragma': 'no-cache',
+                    'Cache-Control': 'no-cache'
+                }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setRequests(prev => {
+                    if (JSON.stringify(prev) !== JSON.stringify(data)) {
+                        return data;
+                    }
+                    return prev;
+                });
+            }
+        } catch (error) {
+            console.error('Failed to fetch requests', error);
         }
+    };
+
+    useEffect(() => {
+        fetchRequests();
+        const intervalId = setInterval(fetchRequests, 2000);
+        return () => clearInterval(intervalId);
     }, []);
+
+    const saveToServer = async (newRequests: DubaiRequest[]) => {
+        try {
+            await fetch('/api/dubai-requests', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newRequests),
+            });
+            await fetchRequests();
+        } catch (error) {
+            console.error('Failed to save to server', error);
+        }
+    };
 
     const addRequest = (data: Omit<DubaiRequest, 'id' | 'status' | 'createdAt'>) => {
         const newRequest: DubaiRequest = {
@@ -48,7 +84,7 @@ export function DubaiRequestProvider({ children }: { children: React.ReactNode }
         };
         const updated = [newRequest, ...requests];
         setRequests(updated);
-        localStorage.setItem('khaliji_dubai_requests', JSON.stringify(updated));
+        saveToServer(updated);
         return newRequest.id;
     };
 
@@ -57,19 +93,19 @@ export function DubaiRequestProvider({ children }: { children: React.ReactNode }
             r.id === id ? { ...r, price, shippingCost, status: 'searching' as const } : r
         );
         setRequests(updated);
-        localStorage.setItem('khaliji_dubai_requests', JSON.stringify(updated));
+        saveToServer(updated);
     };
 
     const updateRequestStatus = (id: string, status: DubaiRequestStatus) => {
         const updated = requests.map(r => r.id === id ? { ...r, status } : r);
         setRequests(updated);
-        localStorage.setItem('khaliji_dubai_requests', JSON.stringify(updated));
+        saveToServer(updated);
     };
 
     const deleteRequest = (id: string) => {
         const updated = requests.filter(r => r.id !== id);
         setRequests(updated);
-        localStorage.setItem('khaliji_dubai_requests', JSON.stringify(updated));
+        saveToServer(updated);
     };
 
     return (
