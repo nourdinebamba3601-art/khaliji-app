@@ -45,40 +45,58 @@ export default function AddProductPage() {
     const [videoUrl, setVideoUrl] = useState('');
     const [isUploadingVideo, setIsUploadingVideo] = useState(false);
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Processing State
+    const [isProcessingImages, setIsProcessingImages] = useState(false);
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             const files = Array.from(e.target.files);
 
-            // Limit to 5 images total
+            // Limit check
             if (images.length + files.length > 5) {
                 toast.error('يمكنك رفع 5 صور كحد أقصى');
                 return;
             }
 
+            setIsProcessingImages(true);
             const newImages: string[] = [];
             let processedCount = 0;
 
-            files.forEach(file => {
-                // Validation
-                if (file.size > 2 * 1024 * 1024) {
-                    toast.error(`${file.name}: حجم الصورة كبير جداً (أقصى حد 2MB)`);
-                    processedCount++;
-                    return;
+            // Import dynamically or assume it's imported at top
+            // practical processing loop
+            try {
+                // Dynamically import to avoid server-side issues (though this is a client component)
+                const { processImage } = await import('@/utils/imageProcessor');
+
+                for (const file of files) {
+                    // Size Check (Pre-process)
+                    if (file.size > 10 * 1024 * 1024) { // 10MB limit before processing
+                        toast.error(`${file.name}: الصورة كبيرة جداً`);
+                        continue;
+                    }
+
+                    try {
+                        const processedUrl = await processImage(file);
+                        newImages.push(processedUrl);
+                        processedCount++;
+                    } catch (err) {
+                        console.error('Error processing image:', err);
+                        toast.error(`فشل معالجة ${file.name}`);
+                    }
                 }
 
-                // Convert to Base64
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    newImages.push(reader.result as string);
-                    processedCount++;
-
-                    if (processedCount === files.length) {
-                        setImages([...images, ...newImages]);
-                        toast.success(`تم رفع ${newImages.length} صورة بنجاح`);
-                    }
-                };
-                reader.readAsDataURL(file);
-            });
+                if (processedCount > 0) {
+                    setImages(prev => [...prev, ...newImages]);
+                    toast.success(`تم معالجة وضغط ${processedCount} صورة بنظام الذكاء الاصطناعي ✨`);
+                }
+            } catch (error) {
+                console.error(error);
+                toast.error('حدث خطأ في نظام المعالجة');
+            } finally {
+                setIsProcessingImages(false);
+                // Reset input
+                e.target.value = '';
+            }
         }
     };
 
@@ -643,10 +661,10 @@ export default function AddProductPage() {
                             {images.length < 5 && (
                                 <label className="aspect-square rounded-xl border-2 border-dashed border-dark-600 hover:border-gold-400 hover:bg-gold-400/5 flex flex-col items-center justify-center cursor-pointer transition-all text-gray-500 hover:text-gold-400 group">
                                     <div className="w-12 h-12 bg-dark-700 rounded-full flex items-center justify-center mb-2 group-hover:bg-gold-400 group-hover:text-dark-900 transition-all">
-                                        <Plus className="w-6 h-6" />
+                                        {isProcessingImages ? <Loader2 className="w-6 h-6 animate-spin text-gold-400 group-hover:text-dark-900" /> : <Plus className="w-6 h-6" />}
                                     </div>
-                                    <span className="text-xs font-bold">إضافة صور</span>
-                                    <span className="text-[10px] text-gray-600 mt-1">({5 - images.length} متبقية)</span>
+                                    <span className="text-xs font-bold">{isProcessingImages ? 'جارِ المعالجة...' : 'إضافة صور'}</span>
+                                    {!isProcessingImages && <span className="text-[10px] text-gray-600 mt-1">({5 - images.length} متبقية)</span>}
                                     <input
                                         type="file"
                                         className="hidden"
