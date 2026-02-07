@@ -119,9 +119,9 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
             // 4. Update UI only after success
             setProducts(updated);
             return true;
-        } catch (e) {
+        } catch (e: any) {
             console.error("Add failed", e);
-            throw e; // Let the UI show the error
+            throw new Error(e.message || "فشل الإضافة");
         }
     };
 
@@ -132,9 +132,9 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
         try {
             await saveToServer(updated);
             setProducts(updated);
-        } catch (e) {
+        } catch (e: any) {
             console.error("Update failed", e);
-            throw e;
+            throw new Error(e.message || "فشل التحديث");
         }
     };
 
@@ -155,9 +155,9 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
             await saveToServer(updated);
             // 5. Update UI only after success
             setProducts(updated);
-        } catch (e) {
+        } catch (e: any) {
             console.error("Delete failed", e);
-            throw new Error("فشل الحذف من قاعدة البيانات. يرجى التحقق من الإنترنت المحاولة مرة أخرى.");
+            throw new Error(e.message || "فشل الحذف");
         }
     };
 
