@@ -144,6 +144,23 @@ export default function DubaiRequestPage() {
                 </div>
             </div>
 
+            {/* DEBUG PANEL - TEMPORARY */}
+            <div className="max-w-7xl mx-auto px-4 mb-4">
+                <details className="bg-red-900/20 border border-red-500/50 p-4 rounded-xl text-xs font-mono text-red-200">
+                    <summary className="cursor-pointer font-bold mb-2">🐞 Debug Info (اضغط للتفاصيل)</summary>
+                    <pre>User Phone: {user ? user.phone : 'Not Logged In'}</pre>
+                    <pre>User ID (Auth): {user ? user.id : 'N/A'}</pre>
+                    <pre>User ID (Computed): {user ? `USER-${user.phone.replace(/\D/g, '')}` : 'N/A'}</pre>
+                    <hr className="border-red-500/30 my-2" />
+                    <pre>Total Requests: {requests.length}</pre>
+                    <pre>My Requests: {userRequests.length}</pre>
+                    <hr className="border-red-500/30 my-2" />
+                    <div className="max-h-40 overflow-auto">
+                        {JSON.stringify(requests.slice(0, 3), null, 2)}
+                    </div>
+                </details>
+            </div>
+
             <div className="max-w-5xl mx-auto px-4 pb-32">
                 <AnimatePresence mode="wait">
                     {showHistory ? (

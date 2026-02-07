@@ -32,21 +32,27 @@ const DubaiRequestContext = createContext<DubaiRequestContextType | undefined>(u
 export function DubaiRequestProvider({ children }: { children: React.ReactNode }) {
     const [requests, setRequests] = useState<DubaiRequest[]>([]);
 
-    // Fetch requests from API
+    // Fetch requests from API with Smart Sync
     const fetchRequests = async () => {
         try {
             const res = await fetch(`/api/dubai-requests?t=${Date.now()}`, {
                 cache: 'no-store',
-                headers: {
-                    'Pragma': 'no-cache',
-                    'Cache-Control': 'no-cache'
-                }
+                headers: { 'Pragma': 'no-cache', 'Cache-Control': 'no-cache' }
             });
             if (res.ok) {
-                const data = await res.json();
+                const serverData = await res.json();
+
                 setRequests(prev => {
-                    if (JSON.stringify(prev) !== JSON.stringify(data)) {
-                        return data;
+                    // 1. If server is empty but we have local data, keep local and sync up
+                    if (serverData.length === 0 && prev.length > 0) {
+                        saveToServer(prev); // Background sync
+                        return prev;
+                    }
+
+                    // 2. If server has data, trust it (or merge if needed)
+                    // For now, simple check: if different, update
+                    if (JSON.stringify(prev) !== JSON.stringify(serverData)) {
+                        return serverData;
                     }
                     return prev;
                 });
