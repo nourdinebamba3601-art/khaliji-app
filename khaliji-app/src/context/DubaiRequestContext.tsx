@@ -129,12 +129,14 @@ export function DubaiRequestProvider({ children }: { children: React.ReactNode }
             r.id === id ? { ...r, price, shippingCost, status: 'searching' as const } : r
         );
         setRequests(updated);
+        localStorage.setItem('khaliji_dubai_requests_backup', JSON.stringify(updated)); // Local Backup
         await saveToServer(updated);
     };
 
     const updateRequestStatus = async (id: string, status: DubaiRequestStatus) => {
         const updated = requests.map(r => r.id === id ? { ...r, status } : r);
         setRequests(updated);
+        localStorage.setItem('khaliji_dubai_requests_backup', JSON.stringify(updated)); // Local Backup
         await saveToServer(updated);
     };
 
