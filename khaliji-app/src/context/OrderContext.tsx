@@ -27,8 +27,8 @@ export type Order = {
 type OrderContextType = {
     orders: Order[];
     addOrder: (order: Omit<Order, 'id' | 'createdAt' | 'status'>) => Promise<string>;
-    updateOrderStatus: (id: string, status: Order['status']) => void;
-    deleteOrder: (id: string) => void;
+    updateOrderStatus: (id: string, status: Order['status']) => Promise<void>;
+    deleteOrder: (id: string) => Promise<void>;
 };
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
@@ -115,16 +115,32 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const updateOrderStatus = (id: string, status: Order['status']) => {
+    const updateOrderStatus = async (id: string, status: Order['status']) => {
+        const originalOrders = [...allOrders];
         const updated = allOrders.map(o => o.id === id ? { ...o, status } : o);
         setAllOrders(updated);
-        saveToServer(updated);
+
+        try {
+            await saveToServer(updated);
+        } catch (error) {
+            console.error("Failed to update status", error);
+            setAllOrders(originalOrders); // Rollback
+            throw new Error('فشل تحديث الحالة');
+        }
     };
 
-    const deleteOrder = (id: string) => {
+    const deleteOrder = async (id: string) => {
+        const originalOrders = [...allOrders];
         const updated = allOrders.filter(o => o.id !== id);
         setAllOrders(updated);
-        saveToServer(updated);
+
+        try {
+            await saveToServer(updated);
+        } catch (error) {
+            console.error("Failed to delete order", error);
+            setAllOrders(originalOrders); // Rollback
+            throw new Error('فشل حذف الطلب');
+        }
     };
 
     return (

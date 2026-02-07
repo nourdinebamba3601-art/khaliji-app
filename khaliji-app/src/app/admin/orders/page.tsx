@@ -237,19 +237,35 @@ export default function OrdersPage() {
                                         <h4 className="text-xs font-black text-gray-400 uppercase mb-4">تحديث حالة الطلب</h4>
                                         <div className="grid grid-cols-1 gap-2">
                                             <button
-                                                onClick={() => updateOrderStatus(selectedOrder.id, 'pending')}
+                                                onClick={() => toast.promise(updateOrderStatus(selectedOrder.id, 'pending'), {
+                                                    loading: 'جاري التحديث...',
+                                                    success: 'تم تغيير الحالة إلى: طلب جديد',
+                                                    error: 'فشل التحديث'
+                                                })}
                                                 className={`py-2 px-4 rounded-xl text-xs font-bold transition border ${selectedOrder.status === 'pending' ? 'bg-red-500 text-white border-red-500 shadow-lg shadow-red-500/20' : 'bg-dark-800 text-red-500 border-red-500/30 hover:bg-red-500/10'}`}
                                             >🔴 طلب جديد (غير مؤكد)</button>
                                             <button
-                                                onClick={() => updateOrderStatus(selectedOrder.id, 'contacted')}
+                                                onClick={() => toast.promise(updateOrderStatus(selectedOrder.id, 'contacted'), {
+                                                    loading: 'جاري التحديث...',
+                                                    success: 'تم تغيير الحالة إلى: تم التواصل',
+                                                    error: 'فشل التحديث'
+                                                })}
                                                 className={`py-2 px-4 rounded-xl text-xs font-bold transition border ${selectedOrder.status === 'contacted' ? 'bg-yellow-500 text-dark-900 border-yellow-500 shadow-lg shadow-yellow-500/20' : 'bg-dark-800 text-yellow-500 border-yellow-500/30 hover:bg-yellow-500/10'}`}
                                             >🟡 تم التواصل مع الزبون</button>
                                             <button
-                                                onClick={() => updateOrderStatus(selectedOrder.id, 'shipped')}
+                                                onClick={() => toast.promise(updateOrderStatus(selectedOrder.id, 'shipped'), {
+                                                    loading: 'جاري التحديث...',
+                                                    success: 'تم تغيير الحالة إلى: جاري التوصيل',
+                                                    error: 'فشل التحديث'
+                                                })}
                                                 className={`py-2 px-4 rounded-xl text-xs font-bold transition border ${selectedOrder.status === 'shipped' ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-600/20' : 'bg-dark-800 text-blue-500 border-blue-500/30 hover:bg-blue-500/10'}`}
                                             >🔵 جاري الشحن / التوصيل</button>
                                             <button
-                                                onClick={() => updateOrderStatus(selectedOrder.id, 'delivered')}
+                                                onClick={() => toast.promise(updateOrderStatus(selectedOrder.id, 'delivered'), {
+                                                    loading: 'جاري التحديث...',
+                                                    success: 'تم تغيير الحالة إلى: تم التسليم',
+                                                    error: 'فشل التحديث'
+                                                })}
                                                 className={`py-2 px-4 rounded-xl text-xs font-bold transition border ${selectedOrder.status === 'delivered' ? 'bg-green-600 text-white border-green-600 shadow-lg shadow-green-600/20' : 'bg-dark-800 text-green-500 border-green-500/30 hover:bg-green-500/10'}`}
                                             >🟢 تم التسليم بنجاح</button>
                                         </div>
