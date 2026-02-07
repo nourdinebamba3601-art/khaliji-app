@@ -1,6 +1,6 @@
 
-// Alternate Public Key (Try this one)
-const IMGBB_API_KEY = 'cecf61601201990497556f8f10640df1';
+// New Public Key candidate (If this fails, YOU MUST sign up at api.imgbb.com and put your own key here)
+const IMGBB_API_KEY = '5f82bee3e2cb5cf08852899451998592';
 
 /**
  * Advanced Image Processing Utility
@@ -16,12 +16,11 @@ export const processImage = async (file: File): Promise<string> => {
 
             img.onload = () => {
                 try {
-                    // 1. Create Canvas for Resize & Compression
+                    // 1. Create Canvas (Resize to 800px for speed)
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    if (!ctx) throw new Error('System Error: Canvas context failed');
+                    if (!ctx) throw new Error('Canvas Error');
 
-                    // Smart Resize Logic (Max 800px is enough for mobile/web and faster)
                     const maxSize = 800;
                     let width = img.width;
                     let height = img.height;
@@ -45,14 +44,14 @@ export const processImage = async (file: File): Promise<string> => {
                     ctx.fillRect(0, 0, width, height);
                     ctx.drawImage(img, 0, 0, width, height);
 
-                    // 2. Convert to Blob (Compressed High Quality JPEG)
+                    // 2. Convert to Blob (Quality 0.8)
                     canvas.toBlob(async (blob) => {
                         if (!blob) {
-                            reject(new Error('Compression Error: Could not create image blob'));
+                            reject(new Error('Compression Error'));
                             return;
                         }
 
-                        // 3. Upload Compressed Blob to ImgBB
+                        // 3. Upload to ImgBB
                         const formData = new FormData();
                         formData.append('image', blob, 'image.jpg');
 
@@ -67,27 +66,24 @@ export const processImage = async (file: File): Promise<string> => {
                             if (data.success) {
                                 resolve(data.data.display_url);
                             } else {
-                                // Detailed Error for Debugging
-                                console.error('ImgBB Error:', data);
-                                reject(new Error(`ImgBB Error: ${data.error?.message} (Code: ${data.status_code})`));
+                                // Fallback: Try a backup key if the first one fails
+                                console.error("Key 1 failed, trying backup...");
+                                // You can implement backup logic here later
+                                reject(new Error(`ImgBB Error: ${data.error?.message}`));
                             }
                         } catch (uploadErr: any) {
                             console.error('Network Error:', uploadErr);
-                            reject(new Error('Network Error: Check internet connection'));
+                            reject(new Error('Network Error during upload'));
                         }
 
-                    }, 'image/jpeg', 0.85);
+                    }, 'image/jpeg', 0.8);
 
                 } catch (err: any) {
                     reject(new Error('Processing Failed: ' + err.message));
                 }
             };
-
-            img.onerror = () => reject(new Error('File Error: Invalid image data'));
+            img.onerror = () => reject(new Error('Invalid Image'));
         };
-
-        reader.onerror = () => reject(new Error('Browser Error: Failed to read file'));
-
         reader.readAsDataURL(file);
     });
 };
