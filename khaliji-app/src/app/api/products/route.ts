@@ -3,16 +3,13 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
-export const dynamic = 'force-dynamic'; // Defaults to auto-static
+export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 const dataDir = path.join(process.cwd(), 'data');
 const filePath = path.join(dataDir, 'products.json');
 
-// Ensure data directory exists
-if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-}
+const DB_URL = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL;
 
 // Initial Mock Data (Same as in Context)
 const initialProducts = [
@@ -108,10 +105,30 @@ const initialProducts = [
     }
 ];
 
+// Ensure data directory exists
+if (!DB_URL && !fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+}
+
 export async function GET() {
     try {
+        // 1. Cloud Fetch (Firebase REST)
+        if (DB_URL) {
+            const res = await fetch(`${DB_URL}/products.json`, {
+                cache: 'no-store',
+                next: { revalidate: 0 }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                return NextResponse.json(data || initialProducts, {
+                    headers: { 'Cache-Control': 'no-store, no-cache' }
+                });
+            }
+        }
+
+        // 2. Local Fetch
         if (!fs.existsSync(filePath)) {
-            // Write initial data if file doesn't exist
+            // Write initial data if file doesn't exist locally
             fs.writeFileSync(filePath, JSON.stringify(initialProducts, null, 2), 'utf-8');
             return NextResponse.json(initialProducts);
         }
@@ -119,7 +136,6 @@ export async function GET() {
         const fileContents = fs.readFileSync(filePath, 'utf-8');
         const data = JSON.parse(fileContents);
 
-        // Add headers to prevent caching
         return NextResponse.json(data, {
             headers: {
                 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
@@ -135,7 +151,20 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         const data = await request.json();
+
+        // 1. Cloud Save
+        if (DB_URL) {
+            await fetch(`${DB_URL}/products.json`, {
+                method: 'PUT',
+                body: JSON.stringify(data),
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        // 2. Local Back up
+        if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
         fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+
         return NextResponse.json({ success: true, message: 'Data saved successfully' });
     } catch (error) {
         return NextResponse.json({ error: 'Failed to save data' }, { status: 500 });
