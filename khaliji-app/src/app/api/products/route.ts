@@ -120,9 +120,11 @@ export async function GET() {
             });
             if (res.ok) {
                 const json = await res.json();
-                // SAFETY CHECK: Ensure we have an Array. If it's {}, return initialProducts to fix crash.
+                // SAFETY CHECK: Ensure we handle the "empty placeholder"
                 if (Array.isArray(json.record)) {
                     return NextResponse.json(json.record);
+                } else if (json.record.empty === true) {
+                    return NextResponse.json([]);
                 } else {
                     // Auto-fix: If bin is empty object {}, assume it's fresh and return defaults
                     return NextResponse.json(initialProducts);
@@ -151,13 +153,16 @@ export async function POST(request: Request) {
 
         // 1. JSONBin Cloud Save
         if (API_KEY && BIN_ID) {
+            // Prevent "Bin cannot be blank" error by sending placeholder for empty arrays
+            const payload = (Array.isArray(data) && data.length === 0) ? { empty: true } : data;
+
             const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                 method: 'PUT',
                 headers: {
                     'X-Master-Key': API_KEY,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(data)
+                body: JSON.stringify(payload)
             });
 
             if (!res.ok) {
