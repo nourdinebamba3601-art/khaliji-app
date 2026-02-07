@@ -163,7 +163,7 @@ export async function POST(request: Request) {
             if (!res.ok) {
                 const errText = await res.text();
                 console.error("JSONBin Error:", errText);
-                return NextResponse.json({ error: `Cloud Save Failed: ${res.statusText}` }, { status: 500 });
+                return NextResponse.json({ error: `Cloud Error: ${errText}` }, { status: 500 });
             }
         }
 
