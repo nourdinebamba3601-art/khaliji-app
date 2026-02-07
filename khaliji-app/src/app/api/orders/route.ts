@@ -60,9 +60,13 @@ export async function POST(request: Request) {
             });
         }
 
-        // 2. Local Backup
-        if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-        fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+        // 2. Local Backup (Best Effort)
+        try {
+            if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+            fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+        } catch (localError) {
+            console.warn("Local backup skipped on Vercel");
+        }
 
         return NextResponse.json({ success: true });
     } catch (error) {
