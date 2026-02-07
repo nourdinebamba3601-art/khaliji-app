@@ -176,10 +176,10 @@ export default function AddProductPage() {
                 error: (err) => `فشل النشر: ${err.message}`
             });
 
-            // Redirect only after successful save
+            // Redirect only after successful save with enough time to read the success message
             setTimeout(() => {
                 router.push('/admin/products');
-            }, 1000);
+            }, 2000);
 
         } catch (error) {
             console.error(error);
