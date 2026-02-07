@@ -126,16 +126,15 @@ export async function GET() {
                 } else if (json.record.empty === true) {
                     return NextResponse.json([]);
                 } else {
-                    // Auto-fix: If bin is empty object {}, assume it's fresh and return defaults
-                    return NextResponse.json(initialProducts);
+                    // Unknown format, safer to return empty than fake data
+                    return NextResponse.json([]);
                 }
             }
         }
 
         // 2. Local Fallback
         if (!fs.existsSync(filePath)) {
-            fs.writeFileSync(filePath, JSON.stringify(initialProducts, null, 2), 'utf-8');
-            return NextResponse.json(initialProducts);
+            return NextResponse.json([]);
         }
         const fileContents = fs.readFileSync(filePath, 'utf-8');
         return NextResponse.json(JSON.parse(fileContents));
@@ -143,7 +142,7 @@ export async function GET() {
     } catch (error) {
         // Return safe default instead of error to prevent crash
         console.error("API Error:", error);
-        return NextResponse.json(initialProducts);
+        return NextResponse.json([]);
     }
 }
 
