@@ -50,7 +50,7 @@ export async function POST(request: Request) {
 
         // 1. JSONBin Cloud Save
         if (API_KEY && BIN_ID) {
-            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+            const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                 method: 'PUT',
                 headers: {
                     'X-Master-Key': API_KEY,
@@ -58,6 +58,10 @@ export async function POST(request: Request) {
                 },
                 body: JSON.stringify(data)
             });
+
+            if (!res.ok) {
+                return NextResponse.json({ error: `Cloud Save Failed: ${res.statusText}` }, { status: 500 });
+            }
         }
 
         // 2. Local Backup (Best Effort)
