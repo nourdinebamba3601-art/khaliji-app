@@ -1,10 +1,11 @@
 
-// New Public Key candidate (If this fails, YOU MUST sign up at api.imgbb.com and put your own key here)
-const IMGBB_API_KEY = '5f82bee3e2cb5cf08852899451998592';
+// 🚨 URGENT: If this key fails, go to https://api.imgbb.com/ to get your own FREE key.
+// Replace the string below with your new key.
+const IMGBB_API_KEY = 'c87eb499424749f75608d4841c305a27';
 
 /**
- * Advanced Image Processing Utility
- * Resizes, Compresses, and Uploads to ImgBB
+ * Advanced Image Processing Utility - ImgBB Edition
+ * Resizes 1024px -> Compresses JPEG 80% -> Uploads to Cloud
  */
 export const processImage = async (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -16,12 +17,12 @@ export const processImage = async (file: File): Promise<string> => {
 
             img.onload = () => {
                 try {
-                    // 1. Create Canvas (Resize to 800px for speed)
+                    // 1. Create Canvas (Resize to 1024px for good quality/speed balance)
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    if (!ctx) throw new Error('Canvas Error');
+                    if (!ctx) throw new Error('Canvas Context Error');
 
-                    const maxSize = 800;
+                    const maxSize = 1024;
                     let width = img.width;
                     let height = img.height;
 
@@ -44,7 +45,7 @@ export const processImage = async (file: File): Promise<string> => {
                     ctx.fillRect(0, 0, width, height);
                     ctx.drawImage(img, 0, 0, width, height);
 
-                    // 2. Convert to Blob (Quality 0.8)
+                    // 2. Convert to Blob (JPEG 80%)
                     canvas.toBlob(async (blob) => {
                         if (!blob) {
                             reject(new Error('Compression Error'));
@@ -66,14 +67,12 @@ export const processImage = async (file: File): Promise<string> => {
                             if (data.success) {
                                 resolve(data.data.display_url);
                             } else {
-                                // Fallback: Try a backup key if the first one fails
-                                console.error("Key 1 failed, trying backup...");
-                                // You can implement backup logic here later
+                                console.error("ImgBB API Error:", data);
                                 reject(new Error(`ImgBB Error: ${data.error?.message}`));
                             }
                         } catch (uploadErr: any) {
                             console.error('Network Error:', uploadErr);
-                            reject(new Error('Network Error during upload'));
+                            reject(new Error('Network Error: Check internet'));
                         }
 
                     }, 'image/jpeg', 0.8);
@@ -82,7 +81,7 @@ export const processImage = async (file: File): Promise<string> => {
                     reject(new Error('Processing Failed: ' + err.message));
                 }
             };
-            img.onerror = () => reject(new Error('Invalid Image'));
+            img.onerror = () => reject(new Error('Invalid Image File'));
         };
         reader.readAsDataURL(file);
     });
