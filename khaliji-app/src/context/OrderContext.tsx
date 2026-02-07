@@ -37,32 +37,53 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
     const [allOrders, setAllOrders] = useState<Order[]>([]);
     const { user, isAdminLogged } = useAuth();
 
-    useEffect(() => {
-        const saved = localStorage.getItem('khaliji_orders');
-        if (saved) {
-            setAllOrders(JSON.parse(saved));
-        }
-
-        // Real-time synchronization for same-origin tabs
-        const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === 'khaliji_orders' && e.newValue) {
-                setAllOrders(JSON.parse(e.newValue));
-            }
-        };
-        window.addEventListener('storage', handleStorageChange);
-        return () => window.removeEventListener('storage', handleStorageChange);
-    }, []);
-
     // Optimization: Memoize the filtered list to prevent heavy re-calculates
     const orders = useMemo(() => {
         const filtered = isAdminLogged
             ? allOrders
-            : allOrders.filter(o => o.userId === user?.id); // Guests see nothing from global state unless we track session ID, which strictly isolates their view.
+            : allOrders.filter(o => o.userId === user?.id);
 
         return [...filtered].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }, [allOrders, user?.id, isAdminLogged]);
 
+    // Fetch orders from API
+    const fetchOrders = async () => {
+        try {
+            const res = await fetch(`/api/orders?t=${Date.now()}`, {
+                cache: 'no-store',
+                headers: { 'Pragma': 'no-cache' }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setAllOrders(prev => {
+                    if (JSON.stringify(prev) !== JSON.stringify(data)) return data;
+                    return prev;
+                });
+            }
+        } catch (error) {
+            console.error('Failed to fetch orders', error);
+        }
+    };
 
+    useEffect(() => {
+        fetchOrders();
+        // Polling every 5 seconds for new orders
+        const intervalId = setInterval(fetchOrders, 5000);
+        return () => clearInterval(intervalId);
+    }, []);
+
+    const saveToServer = async (newOrders: Order[]) => {
+        try {
+            await fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newOrders),
+            });
+            await fetchOrders();
+        } catch (error) {
+            console.error('Failed to save to server', error);
+        }
+    };
 
     const addOrder = (orderData: Omit<Order, 'id' | 'createdAt' | 'status'>) => {
         const newOrder: Order = {
@@ -70,30 +91,27 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
             id: `ORD-${Date.now().toString().slice(-6)}`,
             createdAt: new Date().toISOString(),
             status: 'pending',
-            userId: orderData.userId || user?.id // Prioritize explicit userId
+            userId: orderData.userId || user?.id,
+            source: 'local' // Default source
         };
 
         const updated = [newOrder, ...allOrders];
         setAllOrders(updated);
-        localStorage.setItem('khaliji_orders', JSON.stringify(updated));
-
-        // Dispatch event for other listeners in same tab
-        window.dispatchEvent(new Event('storage'));
+        saveToServer(updated);
 
         return newOrder.id;
     };
 
-
     const updateOrderStatus = (id: string, status: Order['status']) => {
         const updated = allOrders.map(o => o.id === id ? { ...o, status } : o);
         setAllOrders(updated);
-        localStorage.setItem('khaliji_orders', JSON.stringify(updated));
+        saveToServer(updated);
     };
 
     const deleteOrder = (id: string) => {
         const updated = allOrders.filter(o => o.id !== id);
         setAllOrders(updated);
-        localStorage.setItem('khaliji_orders', JSON.stringify(updated));
+        saveToServer(updated);
     };
 
     return (

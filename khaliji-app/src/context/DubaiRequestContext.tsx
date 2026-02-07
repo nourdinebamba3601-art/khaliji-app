@@ -21,7 +21,7 @@ export type DubaiRequest = {
 
 type DubaiRequestContextType = {
     requests: DubaiRequest[];
-    addRequest: (request: Omit<DubaiRequest, 'id' | 'status' | 'createdAt'> & { userId?: string }) => string;
+    addRequest: (request: Omit<DubaiRequest, 'id' | 'status' | 'createdAt'> & { userId?: string }) => Promise<string>;
     updateRequestPrice: (id: string, price: number, shippingCost: number) => void;
     updateRequestStatus: (id: string, status: DubaiRequestStatus) => void;
     deleteRequest: (id: string) => void;
@@ -64,18 +64,22 @@ export function DubaiRequestProvider({ children }: { children: React.ReactNode }
 
     const saveToServer = async (newRequests: DubaiRequest[]) => {
         try {
-            await fetch('/api/dubai-requests', {
+            const res = await fetch('/api/dubai-requests', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newRequests),
             });
+            if (!res.ok) throw new Error("Save failed");
             await fetchRequests();
+            return true;
         } catch (error) {
             console.error('Failed to save to server', error);
+            await fetchRequests(); // Rollback
+            return false;
         }
     };
 
-    const addRequest = (data: Omit<DubaiRequest, 'id' | 'status' | 'createdAt'>) => {
+    const addRequest = async (data: Omit<DubaiRequest, 'id' | 'status' | 'createdAt'>) => {
         const newRequest: DubaiRequest = {
             ...data,
             id: `DXB-${Date.now().toString().slice(-6)}`,
@@ -84,28 +88,33 @@ export function DubaiRequestProvider({ children }: { children: React.ReactNode }
         };
         const updated = [newRequest, ...requests];
         setRequests(updated);
-        saveToServer(updated);
+        await saveToServer(updated);
         return newRequest.id;
     };
 
-    const updateRequestPrice = (id: string, price: number, shippingCost: number) => {
+    const updateRequestPrice = async (id: string, price: number, shippingCost: number) => {
         const updated = requests.map(r =>
             r.id === id ? { ...r, price, shippingCost, status: 'searching' as const } : r
         );
         setRequests(updated);
-        saveToServer(updated);
+        await saveToServer(updated);
     };
 
-    const updateRequestStatus = (id: string, status: DubaiRequestStatus) => {
+    const updateRequestStatus = async (id: string, status: DubaiRequestStatus) => {
         const updated = requests.map(r => r.id === id ? { ...r, status } : r);
         setRequests(updated);
-        saveToServer(updated);
+        await saveToServer(updated);
     };
 
-    const deleteRequest = (id: string) => {
+    const deleteRequest = async (id: string) => {
+        const previous = [...requests];
         const updated = requests.filter(r => r.id !== id);
         setRequests(updated);
-        saveToServer(updated);
+        const success = await saveToServer(updated);
+        if (!success) {
+            setRequests(previous);
+            alert("فشل الحذف، يرجى المحاولة مرة أخرى");
+        }
     };
 
     return (

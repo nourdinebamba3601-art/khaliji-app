@@ -62,10 +62,9 @@ export default function AddProductPage() {
             const newImages: string[] = [];
             let processedCount = 0;
 
-            // Import dynamically or assume it's imported at top
-            // practical processing loop
             try {
-                // Dynamically import to avoid server-side issues (though this is a client component)
+                // Dynamically import only when needed to save initial bundle size
+                // But keep it robust for mobile
                 const { processImage } = await import('@/utils/imageProcessor');
 
                 for (const file of files) {

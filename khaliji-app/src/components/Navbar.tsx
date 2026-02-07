@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ShoppingBag, Menu, Search, X, User, ShoppingCart, LogOut, Settings, Facebook, Watch, Glasses, SprayCan } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
@@ -13,6 +13,18 @@ export default function Navbar() {
     const { cartCount } = useCart();
     const { user, logout } = useAuth();
     const { settings } = useSettings();
+
+    // Lock body scroll when menu is open
+    useEffect(() => {
+        if (isMenuOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isMenuOpen]);
 
     return (
         <nav className="fixed w-full z-50 transition-all duration-300">
