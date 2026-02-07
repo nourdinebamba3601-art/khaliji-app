@@ -138,9 +138,6 @@ export default function AddProductPage() {
         setIsSubmitting(true);
 
         try {
-            // Simulate network delay
-            await new Promise(resolve => setTimeout(resolve, 800));
-
             const newProduct = {
                 name,
                 nameEn,
@@ -172,18 +169,21 @@ export default function AddProductPage() {
                 gender: (category === 'glasses' || category === 'watches' || category === 'perfumes') ? gender : undefined,
             };
 
-            addProduct(newProduct);
+            // Using promise toast for better UX
+            await toast.promise(addProduct(newProduct), {
+                loading: 'جاري رفع المنتج إلى السيرفر...',
+                success: 'تم نشر المنتج بنجاح! سيتم تحويلك...',
+                error: (err) => `فشل النشر: ${err.message}`
+            });
 
-            toast.success('تم إضافة المنتج بنجاح!');
-
-            // Redirect after success
+            // Redirect only after successful save
             setTimeout(() => {
                 router.push('/admin/products');
             }, 1000);
 
         } catch (error) {
             console.error(error);
-            toast.error('حدث خطأ أثناء الحفظ. يرجى المحاولة مرة أخرى.');
+            // Error is handled by toast.promise
         } finally {
             setIsSubmitting(false);
         }
