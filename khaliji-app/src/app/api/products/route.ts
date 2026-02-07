@@ -5,6 +5,7 @@ import path from 'path';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+// Force update to trigger deployment V.2.0
 
 const dataDir = path.join(process.cwd(), 'data');
 const filePath = path.join(dataDir, 'products.json');
