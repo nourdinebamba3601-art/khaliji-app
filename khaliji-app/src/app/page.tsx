@@ -122,7 +122,7 @@ export default function Home() {
               className="group bg-dark-800 rounded-[2rem] overflow-hidden border-2 border-gold-400/10 hover:border-gold-400/50 transition-all duration-700 relative"
             >
               {/* Image/Video Area */}
-              <div className="aspect-[4/5] relative bg-dark-900 overflow-hidden">
+              <Link href={`/products/${product.id}`} className="aspect-[4/5] relative bg-dark-900 overflow-hidden block">
                 {product.videoUrl ? (
                   <video
                     src={product.videoUrl}
@@ -151,7 +151,7 @@ export default function Home() {
                     </span>
                   </div>
                 )}
-              </div>
+              </Link>
 
               {/* Info Area */}
               <div className="p-6">
@@ -203,7 +203,7 @@ export default function Home() {
               className="group bg-dark-800 rounded-[2rem] overflow-hidden border border-white/5 hover:border-gold-400/50 transition-all duration-700 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] relative"
             >
               {/* Image Area */}
-              <div className="aspect-[4/5] relative bg-dark-900 overflow-hidden">
+              <Link href={`/products/${product.id}`} className="aspect-[4/5] relative bg-dark-900 overflow-hidden block">
                 <img
                   src={product.images[0]}
                   alt={product.name}
@@ -220,7 +220,7 @@ export default function Home() {
                     جاهز للمعاينة
                   </span>
                 </div>
-              </div>
+              </Link>
 
               {/* Info Area */}
               <div className="p-6">
