@@ -24,9 +24,11 @@ export async function GET() {
             });
             if (res.ok) {
                 const json = await res.json();
-                // SAFETY CHECK: Ensure array
+                // SAFETY CHECK: Ensure array or empty placeholder
                 if (Array.isArray(json.record)) {
                     return NextResponse.json(json.record);
+                } else if (!json.record || json.record.empty === true) {
+                    return NextResponse.json([]); // Return empty array if placeholder {empty:true} or missing
                 }
                 return NextResponse.json([]); // Return empty array if record is {}
             }
@@ -50,17 +52,21 @@ export async function POST(request: Request) {
 
         // 1. JSONBin Cloud Save
         if (API_KEY && BIN_ID) {
+            // Prevent "Bin cannot be blank"
+            const payload = (Array.isArray(data) && data.length === 0) ? { empty: true } : data;
+
             const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                 method: 'PUT',
                 headers: {
                     'X-Master-Key': API_KEY,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(data)
+                body: JSON.stringify(payload)
             });
 
             if (!res.ok) {
-                return NextResponse.json({ error: `Cloud Save Failed: ${res.statusText}` }, { status: 500 });
+                const errText = await res.text();
+                return NextResponse.json({ error: `Cloud Save Failed: ${errText}` }, { status: 500 });
             }
         }
 
