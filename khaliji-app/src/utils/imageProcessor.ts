@@ -1,7 +1,7 @@
 
 // 🚨 URGENT: If this key fails, go to https://api.imgbb.com/ to get your own FREE key.
-// Replace the string below with your new key.
-const IMGBB_API_KEY = 'c87eb499424749f75608d4841c305a27';
+// User's Personal Key - PERMANENT FIX
+const IMGBB_API_KEY = '90354bf99225661cfd4804452655f834';
 
 /**
  * Advanced Image Processing Utility - ImgBB Edition
