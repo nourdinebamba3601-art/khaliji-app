@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const login = (name: string, phone: string, address?: string) => {
         const newUser: User = {
-            id: `USER-${phone.replace(/\s+/g, '')}`, // ID is based on phone for simplicity
+            id: `USER-${phone.replace(/\D/g, '')}`, // Normalize ID by removing non-digits
             name,
             phone,
             address

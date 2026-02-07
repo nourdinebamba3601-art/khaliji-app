@@ -28,7 +28,7 @@ export default function DubaiRequestPage() {
         image: ''
     });
 
-    const userRequests = requests.filter(r => r.userId === `USER-${user?.phone.replace(/\s+/g, '')}`);
+    const userRequests = requests.filter(r => r.userId === (user ? `USER-${user.phone.replace(/\D/g, '')}` : ''));
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -68,8 +68,14 @@ export default function DubaiRequestPage() {
                 productLink: formData.productLink,
                 budget: formData.budget,
                 image: formData.image,
-                userId: `USER-${formData.phone.replace(/\s+/g, '')}`
+                userId: `USER-${formData.phone.replace(/\D/g, '')}`
             });
+
+            // Force refresh of user data if login happened
+            if (!user) {
+                // Short timeout to allow context to update
+                setTimeout(() => window.location.reload(), 500);
+            }
 
             setRequestId(newId);
             setStep(3);

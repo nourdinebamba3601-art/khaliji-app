@@ -57,10 +57,32 @@ export function DubaiRequestProvider({ children }: { children: React.ReactNode }
     };
 
     useEffect(() => {
+        // 1. Specify Local Storage Key
+        const LOCAL_STORAGE_KEY = 'khaliji_dubai_requests_backup';
+
+        // 2. Load from Local Storage immediately for instant visibility
+        const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (saved) {
+            try {
+                setRequests(JSON.parse(saved));
+            } catch (e) {
+                console.error("Failed to parse local requests", e);
+            }
+        }
+
+        // 3. Fetch from Server
         fetchRequests();
         const intervalId = setInterval(fetchRequests, 2000);
+
         return () => clearInterval(intervalId);
     }, []);
+
+    // 4. Save to Local Storage on every update
+    useEffect(() => {
+        if (requests.length > 0) {
+            localStorage.setItem('khaliji_dubai_requests_backup', JSON.stringify(requests));
+        }
+    }, [requests]);
 
     const saveToServer = async (newRequests: DubaiRequest[]) => {
         try {
@@ -88,6 +110,10 @@ export function DubaiRequestProvider({ children }: { children: React.ReactNode }
         };
         const updated = [newRequest, ...requests];
         setRequests(updated);
+
+        // Immediate Local Backup
+        localStorage.setItem('khaliji_dubai_requests_backup', JSON.stringify(updated));
+
         await saveToServer(updated);
         return newRequest.id;
     };
