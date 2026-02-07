@@ -8,10 +8,13 @@ import { toast, Toaster } from 'sonner';
 export default function ProductsListPage() {
     const { products, deleteProduct } = useProducts();
 
-    const handleDelete = (id: number, name: string) => {
+    const handleDelete = async (id: number, name: string) => {
         if (confirm(`هل أنت متأكد من حذف المنتج: ${name}؟`)) {
-            deleteProduct(id);
-            toast.success('تم حذف المنتج بنجاح');
+            toast.promise(deleteProduct(id), {
+                loading: 'جاري الحذف من قاعدة البيانات...',
+                success: 'تم حذف المنتج بنجاح وتحديث القاعدة',
+                error: (err) => `فشل الحذف: ${err.message}`
+            });
         }
     };
 

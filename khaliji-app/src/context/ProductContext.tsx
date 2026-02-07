@@ -36,9 +36,9 @@ export type Product = {
 
 type ProductContextType = {
     products: Product[];
-    addProduct: (product: Omit<Product, 'id'>) => void;
-    updateProduct: (id: number, updatedData: Partial<Product>) => void;
-    deleteProduct: (id: number) => void;
+    addProduct: (product: Omit<Product, 'id'>) => Promise<boolean>;
+    updateProduct: (id: number, updatedData: Partial<Product>) => Promise<void>;
+    deleteProduct: (id: number) => Promise<void>;
 };
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
@@ -47,9 +47,8 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
     const [products, setProducts] = useState<Product[]>([]);
 
     // Fetch products from API
-    const fetchProducts = async () => {
+    const fetchProducts = async (): Promise<Product[]> => {
         try {
-            // Add timestamp to prevent browser caching
             const res = await fetch(`/api/products?t=${Date.now()}`, {
                 cache: 'no-store',
                 headers: {
@@ -59,16 +58,18 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
             });
             if (res.ok) {
                 const data = await res.json();
-                // Only update if data is different to avoid unnecessary re-renders (simple check)
                 setProducts(prev => {
                     if (JSON.stringify(prev) !== JSON.stringify(data)) {
                         return data;
                     }
                     return prev;
                 });
+                return data;
             }
+            return products; // Return existing if fetch fails but network ok
         } catch (error) {
             console.error('Failed to fetch products', error);
+            return products; // Fallback to current state
         }
     };
 
@@ -82,7 +83,7 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
         return () => clearInterval(intervalId);
     }, []);
 
-    const saveToServer = async (newProducts: Product[]) => {
+    const saveToServer = async (newProducts: Product[]): Promise<boolean> => {
         try {
             const res = await fetch('/api/products', {
                 method: 'POST',
@@ -91,51 +92,72 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
             });
 
             if (!res.ok) {
-                throw new Error('فشل الحفظ على السيرفر');
+                const errorData = await res.json();
+                throw new Error(errorData.error || 'فشل الاتصال بقاعدة البيانات');
             }
 
-            // Immediately re-fetch to ensure consistency and get server timestamp
-            await fetchProducts();
+            // Server confirmed save. Now update UI sources.
             return true;
         } catch (error) {
-            console.error('Failed to save to server', error);
-            // Revert state by fetching latest valid data
-            await fetchProducts();
-            return false;
+            console.error('Server Sync Error:', error);
+            // Re-throw to be handled by the caller UI
+            throw error;
         }
     };
 
     const addProduct = async (product: Omit<Product, 'id'>) => {
-        const newProduct = { ...product, id: Date.now() };
-        const updated = [newProduct, ...products];
-        // Optimistic UI
-        setProducts(updated);
+        // 1. Get fresh data first to ensure we don't overwrite others' work
+        const currentProducts = await fetchProducts();
 
-        const success = await saveToServer(updated);
-        if (!success) {
-            // Toast handled by component or add here
-            console.error("Failed to add product persistence");
+        // 2. Prepare new list
+        const newProduct = { ...product, id: Date.now() };
+        const updated = [newProduct, ...currentProducts];
+
+        // 3. Send to Server (Wait for it!)
+        try {
+            await saveToServer(updated);
+            // 4. Update UI only after success
+            setProducts(updated);
+            return true;
+        } catch (e) {
+            console.error("Add failed", e);
+            throw e; // Let the UI show the error
         }
     };
 
     const updateProduct = async (id: number, updatedData: Partial<Product>) => {
-        const updated = products.map(p => p.id === id ? { ...p, ...updatedData } : p);
-        setProducts(updated);
-        await saveToServer(updated);
+        const currentProducts = await fetchProducts();
+        const updated = currentProducts.map(p => p.id === id ? { ...p, ...updatedData } : p);
+
+        try {
+            await saveToServer(updated);
+            setProducts(updated);
+        } catch (e) {
+            console.error("Update failed", e);
+            throw e;
+        }
     };
 
     const deleteProduct = async (id: number) => {
-        // Keep reference to error recovery
-        const previousProducts = [...products];
+        // 1. Get fresh data
+        const currentProducts = await fetchProducts(); // Ensure we delete from latest version
 
-        // Optimistic UI
-        const updated = products.filter(p => p.id !== id);
-        setProducts(updated);
+        // 2. Validate existence
+        if (!currentProducts.find(p => p.id === id)) {
+            throw new Error("المنتج غير موجود أو تم حذفه مسبقاً");
+        }
 
-        const success = await saveToServer(updated);
-        if (!success) {
-            setProducts(previousProducts); // Rollback
-            alert("حدث خطأ أثناء الحذف، حاول مرة أخرى");
+        // 3. Prepare new list
+        const updated = currentProducts.filter(p => p.id !== id);
+
+        // 4. Send to Server (Wait!)
+        try {
+            await saveToServer(updated);
+            // 5. Update UI only after success
+            setProducts(updated);
+        } catch (e) {
+            console.error("Delete failed", e);
+            throw new Error("فشل الحذف من قاعدة البيانات. يرجى التحقق من الإنترنت المحاولة مرة أخرى.");
         }
     };
 
