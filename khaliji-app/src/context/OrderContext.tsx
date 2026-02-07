@@ -26,7 +26,7 @@ export type Order = {
 
 type OrderContextType = {
     orders: Order[];
-    addOrder: (order: Omit<Order, 'id' | 'createdAt' | 'status'>) => string;
+    addOrder: (order: Omit<Order, 'id' | 'createdAt' | 'status'>) => Promise<string>;
     updateOrderStatus: (id: string, status: Order['status']) => void;
     deleteOrder: (id: string) => void;
 };
@@ -85,21 +85,34 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const addOrder = (orderData: Omit<Order, 'id' | 'createdAt' | 'status'>) => {
+    const addOrder = async (orderData: Omit<Order, 'id' | 'createdAt' | 'status'>): Promise<string> => {
+        // Create new order object
         const newOrder: Order = {
-            ...orderData,
             id: `ORD-${Date.now().toString().slice(-6)}`,
-            createdAt: new Date().toISOString(),
+            customerName: orderData.customerName,
+            phone: orderData.phone,
+            address: orderData.address,
+            items: orderData.items,
+            total: orderData.total,
             status: 'pending',
-            userId: orderData.userId || user?.id,
-            source: 'local' // Default source
+            createdAt: new Date().toISOString(),
+            source: (orderData as any).source || 'local',
+            userId: (orderData as any).userId || user?.id,
         };
 
+        // Optimistic UI Update
         const updated = [newOrder, ...allOrders];
         setAllOrders(updated);
-        saveToServer(updated);
 
-        return newOrder.id;
+        // Save to Server (Critical)
+        try {
+            await saveToServer(updated);
+            return newOrder.id;
+        } catch (error) {
+            // Rollback if server fails
+            setAllOrders(allOrders);
+            throw new Error('فشل إرسال الطلب للسيرفر، يرجى المحاولة مرة أخرى');
+        }
     };
 
     const updateOrderStatus = (id: string, status: Order['status']) => {

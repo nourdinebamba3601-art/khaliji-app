@@ -4,11 +4,13 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Trash2, CreditCard, ArrowRight, MessageCircle, ShoppingBag, Plus, Minus, ShieldCheck, Wallet } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast, Toaster } from 'sonner';
 
 export default function CartPage() {
+    const router = useRouter();
     const { items, removeFromCart, updateQuantity, total } = useCart();
     const shipping = 0; // Free shipping
     const finalTotal = items.length > 0 ? total + shipping : 0;
@@ -153,19 +155,11 @@ export default function CartPage() {
 
                                 <div className="space-y-4">
                                     <button
-                                        onClick={handleWhatsAppCheckout}
-                                        className="w-full bg-[#25D366] hover:bg-[#20ba59] text-white font-black py-5 rounded-2xl flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-xl shadow-green-500/20 text-lg"
+                                        onClick={() => router.push('/checkout')}
+                                        className="w-full bg-gold-gradient hover:bg-gold-600 text-dark-900 font-black py-5 rounded-2xl flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-xl shadow-gold-500/20 text-lg"
                                     >
-                                        <MessageCircle className="w-6 h-6 fill-current" />
-                                        تأكيد الطلب WhatsApp
-                                    </button>
-
-                                    <button
-                                        onClick={handleBankilyCheckout}
-                                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-5 rounded-2xl flex items-center justify-center gap-3 transition-all transform active:scale-95 shadow-xl shadow-blue-500/20 text-lg"
-                                    >
-                                        <Wallet className="w-6 h-6" />
-                                        الدفع عبر بنكيلي
+                                        <ArrowRight className="w-6 h-6" />
+                                        متابعة لإتمام الطلب
                                     </button>
 
                                     <div className="pt-4 flex items-center justify-center gap-2 text-[10px] text-gray-500 font-bold">

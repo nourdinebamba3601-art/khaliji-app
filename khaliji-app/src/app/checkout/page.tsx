@@ -49,12 +49,9 @@ export default function CheckoutPage() {
                 login(formData.name, formData.phone, formData.address);
             }
 
-            // Simulate processing
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
             const userId = `USER-${formData.phone.replace(/\s+/g, '')}`;
 
-            const newOrderId = addOrder({
+            const newOrderId = await addOrder({
                 customerName: formData.name,
                 phone: formData.phone,
                 address: formData.address,
