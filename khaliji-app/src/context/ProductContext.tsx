@@ -84,35 +84,59 @@ export function ProductProvider({ children }: { children: React.ReactNode }) {
 
     const saveToServer = async (newProducts: Product[]) => {
         try {
-            await fetch('/api/products', {
+            const res = await fetch('/api/products', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newProducts),
             });
-            // Immediately re-fetch to ensure consistency
+
+            if (!res.ok) {
+                throw new Error('فشل الحفظ على السيرفر');
+            }
+
+            // Immediately re-fetch to ensure consistency and get server timestamp
             await fetchProducts();
+            return true;
         } catch (error) {
             console.error('Failed to save to server', error);
+            // Revert state by fetching latest valid data
+            await fetchProducts();
+            return false;
         }
     };
 
-    const addProduct = (product: Omit<Product, 'id'>) => {
+    const addProduct = async (product: Omit<Product, 'id'>) => {
         const newProduct = { ...product, id: Date.now() };
         const updated = [newProduct, ...products];
-        setProducts(updated); // Optimistic update
-        saveToServer(updated);
+        // Optimistic UI
+        setProducts(updated);
+
+        const success = await saveToServer(updated);
+        if (!success) {
+            // Toast handled by component or add here
+            console.error("Failed to add product persistence");
+        }
     };
 
-    const updateProduct = (id: number, updatedData: Partial<Product>) => {
+    const updateProduct = async (id: number, updatedData: Partial<Product>) => {
         const updated = products.map(p => p.id === id ? { ...p, ...updatedData } : p);
-        setProducts(updated); // Optimistic update
-        saveToServer(updated);
+        setProducts(updated);
+        await saveToServer(updated);
     };
 
-    const deleteProduct = (id: number) => {
+    const deleteProduct = async (id: number) => {
+        // Keep reference to error recovery
+        const previousProducts = [...products];
+
+        // Optimistic UI
         const updated = products.filter(p => p.id !== id);
-        setProducts(updated); // Optimistic update
-        saveToServer(updated);
+        setProducts(updated);
+
+        const success = await saveToServer(updated);
+        if (!success) {
+            setProducts(previousProducts); // Rollback
+            alert("حدث خطأ أثناء الحذف، حاول مرة أخرى");
+        }
     };
 
     return (
