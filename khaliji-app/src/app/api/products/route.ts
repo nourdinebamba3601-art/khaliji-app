@@ -119,7 +119,13 @@ export async function GET() {
             });
             if (res.ok) {
                 const json = await res.json();
-                return NextResponse.json(json.record || initialProducts);
+                // SAFETY CHECK: Ensure we have an Array. If it's {}, return initialProducts to fix crash.
+                if (Array.isArray(json.record)) {
+                    return NextResponse.json(json.record);
+                } else {
+                    // Auto-fix: If bin is empty object {}, assume it's fresh and return defaults
+                    return NextResponse.json(initialProducts);
+                }
             }
         }
 
@@ -132,7 +138,9 @@ export async function GET() {
         return NextResponse.json(JSON.parse(fileContents));
 
     } catch (error) {
-        return NextResponse.json({ error: 'Failed to read data' }, { status: 500 });
+        // Return safe default instead of error to prevent crash
+        console.error("API Error:", error);
+        return NextResponse.json(initialProducts);
     }
 }
 

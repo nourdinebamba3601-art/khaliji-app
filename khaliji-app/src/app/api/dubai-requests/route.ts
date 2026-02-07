@@ -24,7 +24,11 @@ export async function GET() {
             });
             if (res.ok) {
                 const json = await res.json();
-                return NextResponse.json(json.record || []);
+                // SAFETY CHECK: Ensure array
+                if (Array.isArray(json.record)) {
+                    return NextResponse.json(json.record);
+                }
+                return NextResponse.json([]); // Return empty array if record is {}
             }
         }
 
@@ -36,7 +40,7 @@ export async function GET() {
         return NextResponse.json(JSON.parse(fileContents));
 
     } catch (error) {
-        return NextResponse.json({ error: 'Failed to read data' }, { status: 500 });
+        return NextResponse.json([]);
     }
 }
 
