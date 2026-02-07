@@ -3,6 +3,9 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const dataDir = path.join(process.cwd(), 'data');
 const filePath = path.join(dataDir, 'dubai-requests.json');
 
