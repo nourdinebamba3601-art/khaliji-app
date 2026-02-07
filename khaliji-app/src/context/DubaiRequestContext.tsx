@@ -141,11 +141,23 @@ export function DubaiRequestProvider({ children }: { children: React.ReactNode }
     const deleteRequest = async (id: string) => {
         const previous = [...requests];
         const updated = requests.filter(r => r.id !== id);
+
+        // 1. Optimistic Update
         setRequests(updated);
+
+        // 2. Remove from Local Storage Immediately
+        localStorage.setItem('khaliji_dubai_requests_backup', JSON.stringify(updated));
+
+        // 3. Try Server Delete
         const success = await saveToServer(updated);
+
         if (!success) {
-            setRequests(previous);
-            alert("فشل الحذف، يرجى المحاولة مرة أخرى");
+            // Even if server fails (e.g. no internet), we keep local deletion valid for user experience
+            // We only rollback if it's a critical logic error, but network error shouldn't undo user action locally
+            console.warn("Server sync failed during delete, but kept local change.");
+            // OPTIONAL: Restore if you want strict consistency:
+            // setRequests(previous);
+            // alert("فشل الحذف من السيرفر، لكن تم الحذف من جهازك");
         }
     };
 
