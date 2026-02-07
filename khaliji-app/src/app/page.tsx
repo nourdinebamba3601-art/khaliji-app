@@ -161,10 +161,14 @@ export default function Home() {
                 <div className="flex items-center justify-between mt-4">
                   <p className="text-gold-400 font-black text-xl">{product.price.toLocaleString()} <span className="text-[10px] font-normal">UM</span></p>
                   <button
-                    onClick={() => handleAddToCart(product)}
-                    className="w-10 h-10 bg-white/5 hover:bg-gold-gradient hover:text-dark-900 text-gold-400 rounded-xl transition-all flex items-center justify-center active:scale-90"
+                    onClick={() => product.quantity > 0 && handleAddToCart(product)}
+                    disabled={product.quantity <= 0}
+                    className={`w-10 h-10 rounded-xl transition-all flex items-center justify-center ${product.quantity > 0
+                      ? 'bg-white/5 hover:bg-gold-gradient hover:text-dark-900 text-gold-400 active:scale-90 cursor-pointer'
+                      : 'bg-dark-900 text-gray-600 cursor-not-allowed opacity-50'}`}
+                    title={product.quantity > 0 ? "إضافة للسلة" : "نفد من المخزن"}
                   >
-                    <ShoppingBag className="w-5 h-5" />
+                    {product.quantity > 0 ? <ShoppingBag className="w-5 h-5" /> : <span className="text-[10px] font-bold">نفد</span>}
                   </button>
                 </div>
               </div>
@@ -236,10 +240,14 @@ export default function Home() {
                 <div className="flex items-center justify-between mt-4 gap-2">
                   <p className="text-gold-400 font-black text-xl whitespace-nowrap">{product.price.toLocaleString()} <span className="text-[10px] font-normal">UM</span></p>
                   <button
-                    onClick={() => handleAddToCart(product)}
-                    className="w-10 h-10 bg-white/5 hover:bg-gold-gradient hover:text-dark-900 text-gold-400 rounded-xl transition-all flex items-center justify-center active:scale-90 border border-white/5"
+                    onClick={() => product.quantity > 0 && handleAddToCart(product)}
+                    disabled={product.quantity <= 0}
+                    className={`w-10 h-10 rounded-xl transition-all flex items-center justify-center border border-white/5 ${product.quantity > 0
+                      ? 'bg-white/5 hover:bg-gold-gradient hover:text-dark-900 text-gold-400 active:scale-90 cursor-pointer'
+                      : 'bg-dark-900 text-gray-600 cursor-not-allowed opacity-50'}`}
+                    title={product.quantity > 0 ? "إضافة للسلة" : "نفد من المخزن"}
                   >
-                    <ShoppingBag className="w-5 h-5" />
+                    {product.quantity > 0 ? <ShoppingBag className="w-5 h-5" /> : <span className="text-[10px] font-bold">نفد</span>}
                   </button>
                 </div>
               </div>
