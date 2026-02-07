@@ -78,9 +78,9 @@ export default function AddProductPage() {
                         const processedUrl = await processImage(file);
                         newImages.push(processedUrl);
                         processedCount++;
-                    } catch (err) {
-                        console.error('Error processing image:', err);
-                        toast.error(`فشل معالجة ${file.name}`);
+                    } catch (err: any) {
+                        console.error('Processing failed for image:', err);
+                        toast.error(`فشل ${file.name}: ${err.message}`);
                     }
                 }
 
