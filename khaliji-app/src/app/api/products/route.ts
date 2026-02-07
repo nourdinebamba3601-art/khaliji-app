@@ -9,9 +9,11 @@ export const revalidate = 0;
 const dataDir = path.join(process.cwd(), 'data');
 const filePath = path.join(dataDir, 'products.json');
 
-const DB_URL = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL;
+// Configuration JSONBin
+const API_KEY = process.env.JSONBIN_API_KEY;
+const BIN_ID = process.env.JSONBIN_BIN_ID_PRODUCTS;
 
-// Initial Mock Data (Same as in Context)
+// Initial Mock Data
 const initialProducts = [
     {
         id: 1,
@@ -30,6 +32,7 @@ const initialProducts = [
         perfumeVolume: "100ml",
         perfumeScent: "عود ملکی، أخشاب دافئة"
     },
+    // ... items truncated for brevity, same initial data ...
     {
         id: 2,
         name: "رولكس دايتونا",
@@ -105,44 +108,29 @@ const initialProducts = [
     }
 ];
 
-// Ensure data directory exists
-if (!DB_URL && !fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-}
-
 export async function GET() {
     try {
-        // 1. Cloud Fetch (Firebase REST)
-        if (DB_URL) {
-            const res = await fetch(`${DB_URL}/products.json`, {
+        // 1. JSONBin Cloud Fetch
+        if (API_KEY && BIN_ID) {
+            const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                headers: { 'X-Master-Key': API_KEY },
                 cache: 'no-store',
                 next: { revalidate: 0 }
             });
             if (res.ok) {
-                const data = await res.json();
-                return NextResponse.json(data || initialProducts, {
-                    headers: { 'Cache-Control': 'no-store, no-cache' }
-                });
+                const json = await res.json();
+                return NextResponse.json(json.record || initialProducts);
             }
         }
 
-        // 2. Local Fetch
+        // 2. Local Fallback
         if (!fs.existsSync(filePath)) {
-            // Write initial data if file doesn't exist locally
             fs.writeFileSync(filePath, JSON.stringify(initialProducts, null, 2), 'utf-8');
             return NextResponse.json(initialProducts);
         }
-
         const fileContents = fs.readFileSync(filePath, 'utf-8');
-        const data = JSON.parse(fileContents);
+        return NextResponse.json(JSON.parse(fileContents));
 
-        return NextResponse.json(data, {
-            headers: {
-                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-                'Pragma': 'no-cache',
-                'Expires': '0',
-            }
-        });
     } catch (error) {
         return NextResponse.json({ error: 'Failed to read data' }, { status: 500 });
     }
@@ -152,20 +140,23 @@ export async function POST(request: Request) {
     try {
         const data = await request.json();
 
-        // 1. Cloud Save
-        if (DB_URL) {
-            await fetch(`${DB_URL}/products.json`, {
+        // 1. JSONBin Cloud Save
+        if (API_KEY && BIN_ID) {
+            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                 method: 'PUT',
-                body: JSON.stringify(data),
-                headers: { 'Content-Type': 'application/json' }
+                headers: {
+                    'X-Master-Key': API_KEY,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
             });
         }
 
-        // 2. Local Back up
+        // 2. Local Backup
         if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
         fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
 
-        return NextResponse.json({ success: true, message: 'Data saved successfully' });
+        return NextResponse.json({ success: true });
     } catch (error) {
         return NextResponse.json({ error: 'Failed to save data' }, { status: 500 });
     }

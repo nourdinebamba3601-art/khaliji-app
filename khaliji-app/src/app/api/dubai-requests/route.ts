@@ -9,38 +9,31 @@ export const revalidate = 0;
 const dataDir = path.join(process.cwd(), 'data');
 const filePath = path.join(dataDir, 'dubai-requests.json');
 
-// Helper to get DB URL form Enviroment
-const DB_URL = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL;
-
-// Ensure data directory exists
-if (!DB_URL && !fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-}
+// Configuration JSONBin
+const API_KEY = process.env.JSONBIN_API_KEY;
+const BIN_ID = process.env.JSONBIN_BIN_ID_REQUESTS;
 
 export async function GET() {
     try {
-        // 1. Cloud Fetch (Firebase REST)
-        if (DB_URL) {
-            const res = await fetch(`${DB_URL}/dubai-requests.json`, {
+        // 1. JSONBin Cloud Fetch
+        if (API_KEY && BIN_ID) {
+            const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                headers: { 'X-Master-Key': API_KEY },
                 cache: 'no-store',
                 next: { revalidate: 0 }
             });
             if (res.ok) {
-                const data = await res.json();
-                return NextResponse.json(data || [], {
-                    headers: { 'Cache-Control': 'no-store, no-cache' }
-                });
+                const json = await res.json();
+                return NextResponse.json(json.record || []);
             }
         }
 
-        // 2. Local File Fallback
+        // 2. Local Fallback
         if (!fs.existsSync(filePath)) {
             return NextResponse.json([]);
         }
         const fileContents = fs.readFileSync(filePath, 'utf-8');
-        return NextResponse.json(JSON.parse(fileContents), {
-            headers: { 'Cache-Control': 'no-store, no-cache' }
-        });
+        return NextResponse.json(JSON.parse(fileContents));
 
     } catch (error) {
         return NextResponse.json({ error: 'Failed to read data' }, { status: 500 });
@@ -51,16 +44,19 @@ export async function POST(request: Request) {
     try {
         const data = await request.json();
 
-        // 1. Cloud Save
-        if (DB_URL) {
-            await fetch(`${DB_URL}/dubai-requests.json`, {
+        // 1. JSONBin Cloud Save
+        if (API_KEY && BIN_ID) {
+            await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
                 method: 'PUT',
-                body: JSON.stringify(data),
-                headers: { 'Content-Type': 'application/json' }
+                headers: {
+                    'X-Master-Key': API_KEY,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
             });
         }
 
-        // 2. Local Backup Save
+        // 2. Local Backup
         if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
         fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
 
