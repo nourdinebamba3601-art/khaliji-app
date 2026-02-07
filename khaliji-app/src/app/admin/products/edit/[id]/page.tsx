@@ -201,7 +201,7 @@ export default function EditProductPage(props: { params: Promise<{ id: string }>
                 gender: (category === 'glasses' || category === 'watches' || category === 'perfumes') ? gender : undefined,
             };
 
-            updateProduct(productId, updatedData);
+            await updateProduct(productId, updatedData);
 
             toast.success('تم تحديث المنتج بنجاح!');
             setTimeout(() => {

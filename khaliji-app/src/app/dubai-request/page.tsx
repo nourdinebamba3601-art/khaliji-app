@@ -60,7 +60,7 @@ export default function DubaiRequestPage() {
             // Simulate server proccessing
             await new Promise(resolve => setTimeout(resolve, 2000));
 
-            const newId = addRequest({
+            const newId = await addRequest({
                 customerName: formData.customerName,
                 phone: formData.phone,
                 productName: formData.productName,
