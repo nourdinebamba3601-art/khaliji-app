@@ -59,7 +59,7 @@ export default function CheckoutPage() {
                     ...item,
                     source: (item as any).source || 'local'
                 })),
-                total: total,
+                total: total + (settings.shippingFee || 0),
                 source: items.some(i => (i as any).source === 'dubai') ? 'dubai' : 'local',
                 userId: userId
             });
