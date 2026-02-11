@@ -46,7 +46,7 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
         return [...filtered].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }, [allOrders, user?.id, isAdminLogged]);
 
-    // Fetch orders from API
+    // Fetch orders with Smart Sync
     const fetchOrders = async () => {
         try {
             const res = await fetch(`/api/orders?t=${Date.now()}`, {
@@ -54,9 +54,25 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
                 headers: { 'Pragma': 'no-cache' }
             });
             if (res.ok) {
-                const data = await res.json();
+                const serverData = await res.json();
+
                 setAllOrders(prev => {
-                    if (JSON.stringify(prev) !== JSON.stringify(data)) return data;
+                    // Smart Sync: If server is empty/lost but we have local data, re-upload local data
+                    if (serverData.length === 0 && prev.length > 0) {
+                        // We do this silently in background
+                        fetch('/api/orders', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(prev),
+                        }).catch(err => console.error("Background sync failed", err));
+
+                        return prev; // Keep local data
+                    }
+
+                    // Normal Sync: Trust server if it has data
+                    if (JSON.stringify(prev) !== JSON.stringify(serverData)) {
+                        return serverData;
+                    }
                     return prev;
                 });
             }
@@ -65,12 +81,30 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    // 1. Initial Load & Sync
     useEffect(() => {
+        // Load from LocalStorage immediately
+        const saved = localStorage.getItem('khaliji_orders_backup');
+        if (saved) {
+            try {
+                setAllOrders(JSON.parse(saved));
+            } catch (e) {
+                console.error("Failed to parse local orders", e);
+            }
+        }
+
+        // Start Server Sync
         fetchOrders();
-        // Polling every 5 seconds for new orders
-        const intervalId = setInterval(fetchOrders, 5000);
+        const intervalId = setInterval(fetchOrders, 3000); // Poll every 3s
         return () => clearInterval(intervalId);
     }, []);
+
+    // 2. Persist to LocalStorage on every change
+    useEffect(() => {
+        if (allOrders.length > 0) {
+            localStorage.setItem('khaliji_orders_backup', JSON.stringify(allOrders));
+        }
+    }, [allOrders]);
 
     const saveToServer = async (newOrders: Order[]) => {
         try {
